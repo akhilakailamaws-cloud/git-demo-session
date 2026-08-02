@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <title>Git Versioning & Deployment — Friday Session</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: 'Segoe UI', sans-serif; background: #0d1117; color: #c9d1d9; overflow: hidden; }
+
+    .slide { display: none; width: 100vw; height: 100vh; padding: 60px 80px; flex-direction: column; justify-content: center; }
+    .slide.active { display: flex; }
+
+    /* Slide themes */
+    .slide-title { background: linear-gradient(135deg, #0d1117, #161b22); border-left: 6px solid #58a6ff; }
+    .slide-content { background: #0d1117; }
+    .slide-code { background: #0d1117; }
+    .slide-green { background: #0d1117; border-left: 6px solid #3fb950; }
+
+    h1 { font-size: 3rem; color: #58a6ff; margin-bottom: 16px; }
+    h2 { font-size: 2rem; color: #58a6ff; margin-bottom: 24px; border-bottom: 1px solid #30363d; padding-bottom: 12px; }
+    h3 { font-size: 1.3rem; color: #3fb950; margin-bottom: 12px; }
+    p  { font-size: 1.1rem; color: #8b949e; margin-bottom: 12px; line-height: 1.7; }
+    .subtitle { font-size: 1.3rem; color: #8b949e; margin-top: 8px; }
+    .tag { background: #238636; color: #fff; padding: 3px 12px; border-radius: 20px; font-size: 0.85rem; margin-right: 8px; }
+    .tag.blue { background: #1f6feb; }
+    .tag.red  { background: #da3633; }
+
+    ul { list-style: none; margin-left: 0; }
+    ul li { padding: 10px 0; font-size: 1.05rem; border-bottom: 1px solid #21262d; }
+    ul li:last-child { border-bottom: none; }
+    ul li::before { content: "▸ "; color: #58a6ff; }
+
+    pre {
+      background: #161b22;
+      border: 1px solid #30363d;
+      border-radius: 8px;
+      padding: 20px 24px;
+      font-size: 1rem;
+      color: #79c0ff;
+      overflow-x: auto;
+      line-height: 1.8;
+      margin-top: 12px;
+    }
+    .comment { color: #484f58; }
+    .cmd { color: #3fb950; }
+    .flag { color: #ffa657; }
+
+    .two-col { display: flex; gap: 40px; }
+    .col { flex: 1; }
+
+    .branch-diagram { display: flex; flex-direction: column; gap: 12px; margin-top: 16px; }
+    .branch-row { display: flex; align-items: center; gap: 16px; }
+    .branch-line { height: 4px; flex: 1; border-radius: 2px; }
+    .branch-dot { width: 14px; height: 14px; border-radius: 50%; flex-shrink: 0; }
+    .b-main    { background: #58a6ff; }
+    .b-develop { background: #3fb950; }
+    .b-feature { background: #ffa657; }
+    .b-hotfix  { background: #f85149; }
+
+    .nav { position: fixed; bottom: 30px; right: 40px; display: flex; gap: 12px; }
+    .nav button {
+      background: #161b22; border: 1px solid #30363d; color: #c9d1d9;
+      padding: 10px 24px; border-radius: 6px; cursor: pointer; font-size: 1rem;
+    }
+    .nav button:hover { background: #1f6feb; border-color: #1f6feb; }
+
+    .slide-num { position: fixed; bottom: 36px; left: 40px; color: #484f58; font-size: 0.9rem; }
+
+    .highlight { color: #ffa657; font-weight: bold; }
+    .green { color: #3fb950; }
+    .blue  { color: #58a6ff; }
+
+    .big-icon { font-size: 4rem; margin-bottom: 16px; }
+    .center { text-align: center; align-items: center; }
+  </style>
+</head>
+<body>
+
+<!-- SLIDE 1: Title -->
+<div class="slide slide-title active">
+  <div class="big-icon">🚀</div>
+  <h1>Git Versioning &<br/>Deployment Strategies</h1>
+  <p class="subtitle">Live Demo Session — DevOps Friday Talk</p>
+  <br/>
+  <p>Topics: Branching · Commits · Squash · Tags · Clean History · GitHub Pages</p>
+</div>
+
+<!-- SLIDE 2: Agenda -->
+<div class="slide slide-content">
+  <h2>📋 What We'll Cover Today</h2>
+  <ul>
+    <li>Branching Strategy — main / develop / feature / hotfix</li>
+    <li>Making commits the right way</li>
+    <li>Squashing messy commits into clean ones</li>
+    <li>Maintaining a clean commit history</li>
+    <li>Production Tags — versioning your releases</li>
+    <li>Deployment via GitHub Pages (live!)</li>
+    <li>Hotfix workflow — real production scenario</li>
+  </ul>
+</div>
+
+<!-- SLIDE 3: Branching Strategy -->
+<div class="slide slide-content">
+  <h2>🌿 Branching Strategy</h2>
+  <div class="two-col">
+    <div class="col">
+      <ul>
+        <li><span class="blue">main</span> — Production. Always stable. Never commit directly.</li>
+        <li><span class="green">develop</span> — Integration branch. All features merge here first.</li>
+        <li><span class="highlight">feature/*</span> — One branch per feature. Branch from develop.</li>
+        <li style="color:#f85149">▸ hotfix/*</span> — Emergency fix. Branch from main directly.</li>
+      </ul>
+    </div>
+    <div class="col">
+      <div class="branch-diagram">
+        <div class="branch-row">
+          <span style="width:80px;color:#58a6ff;font-size:0.9rem">main</span>
+          <div class="branch-dot b-main"></div>
+          <div class="branch-line b-main"></div>
+          <div class="branch-dot b-main"></div>
+          <div class="branch-line b-main"></div>
+          <div class="branch-dot b-main"></div>
+        </div>
+        <div class="branch-row">
+          <span style="width:80px;color:#3fb950;font-size:0.9rem">develop</span>
+          <div class="branch-dot b-develop"></div>
+          <div class="branch-line b-develop"></div>
+          <div class="branch-dot b-develop"></div>
+          <div class="branch-line b-develop"></div>
+          <div class="branch-dot b-develop"></div>
+        </div>
+        <div class="branch-row">
+          <span style="width:80px;color:#ffa657;font-size:0.9rem">feature</span>
+          <div style="width:14px"></div>
+          <div class="branch-dot b-feature"></div>
+          <div class="branch-line b-feature"></div>
+          <div class="branch-dot b-feature"></div>
+        </div>
+        <div class="branch-row">
+          <span style="width:80px;color:#f85149;font-size:0.9rem">hotfix</span>
+          <div style="width:14px"></div>
+          <div class="branch-dot b-hotfix"></div>
+          <div class="branch-line b-hotfix"></div>
+          <div class="branch-dot b-hotfix"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- SLIDE 4: Good Commits -->
+<div class="slide slide-code">
+  <h2>✍️ Writing Good Commit Messages</h2>
+  <h3>Conventional Commits Format</h3>
+  <pre><span class="comment"># Format:</span>
+<span class="cmd">type: short description (max 72 chars)</span>
+
+<span class="comment"># Types:</span>
+<span class="flag">feat</span>     → new feature
+<span class="flag">fix</span>      → bug fix
+<span class="flag">docs</span>     → documentation only
+<span class="flag">refactor</span> → code change, no feature/fix
+<span class="flag">chore</span>    → build, config, tooling
+
+<span class="comment"># Good examples:</span>
+<span class="cmd">feat: add user login page
+fix: resolve null pointer in auth service
+docs: update README with deployment steps
+chore: update .gitignore</span></pre>
+</div>
+
+<!-- SLIDE 5: Squash -->
+<div class="slide slide-code">
+  <h2>🗜️ Squashing Commits</h2>
+  <p>Devs make many small "wip" commits while working. Before merging, we <span class="highlight">squash</span> them into 1 clean commit.</p>
+  <pre><span class="comment"># You have 3 messy commits:</span>
+abc1234  wip: started team section
+def5678  wip: added names
+ghi9012  fix typo
+
+<span class="comment"># Squash last 3 into 1:</span>
+<span class="cmd">git rebase -i HEAD~3</span>
+
+<span class="comment"># In editor — change to:</span>
+<span class="flag">pick</span>   abc1234  wip: started team section
+<span class="flag">squash</span> def5678  wip: added names
+<span class="flag">squash</span> ghi9012  fix typo
+
+<span class="comment"># Write new clean message:</span>
+<span class="cmd">feat: add team members section</span>
+
+<span class="comment"># Result: 1 clean commit ✅</span></pre>
+</div>
+
+<!-- SLIDE 6: Clean History -->
+<div class="slide slide-code">
+  <h2>📜 Clean Commit History</h2>
+  <div class="two-col">
+    <div class="col">
+      <h3 style="color:#f85149">❌ Messy History</h3>
+      <pre style="font-size:0.85rem">wip stuff
+fix
+fix again
+testing
+asdfgh
+final fix
+FINAL fix for real
+ok done</pre>
+    </div>
+    <div class="col">
+      <h3>✅ Clean History</h3>
+      <pre style="font-size:0.85rem"><span class="cmd">feat: add team section
+fix: correct badge text
+docs: update README
+chore: add .gitignore
+feat: initial project setup</span></pre>
+    </div>
+  </div>
+  <br/>
+  <pre><span class="comment"># View clean visual log:</span>
+<span class="cmd">git log --oneline --graph --all</span></pre>
+</div>
+
+<!-- SLIDE 7: Tags -->
+<div class="slide slide-code">
+  <h2>🏷️ Production Tags — Versioning</h2>
+  <p>Tags are <span class="highlight">permanent bookmarks</span> on a commit. Use them to mark every production release.</p>
+  <pre><span class="comment"># Annotated tag (recommended for production)</span>
+<span class="cmd">git tag -a v1.0.0 -m "Release v1.0.0 — initial launch"</span>
+<span class="cmd">git tag -a v1.1.0 -m "Release v1.1.0 — added team section"</span>
+
+<span class="comment"># Push tags to GitHub</span>
+<span class="cmd">git push origin --tags</span>
+
+<span class="comment"># List all tags</span>
+<span class="cmd">git tag</span>
+
+<span class="comment"># See full tag details</span>
+<span class="cmd">git show v1.1.0</span>
+
+<span class="comment"># Semantic Versioning:  MAJOR.MINOR.PATCH</span>
+<span class="flag">v1.0.0</span>  → first stable release
+<span class="flag">v1.1.0</span>  → new feature added
+<span class="flag">v1.1.1</span>  → hotfix / patch</pre>
+</div>
+
+<!-- SLIDE 8: Deployment -->
+<div class="slide slide-content">
+  <h2>🌐 Deployment — GitHub Pages</h2>
+  <ul>
+    <li>Free static hosting directly from your GitHub repo</li>
+    <li>Go to repo → <span class="highlight">Settings → Pages</span></li>
+    <li>Source: <span class="blue">Deploy from branch → main → / (root)</span></li>
+    <li>Save → site is live in ~60 seconds</li>
+    <li>URL: <span class="green">https://&lt;username&gt;.github.io/git-demo-session</span></li>
+  </ul>
+  <br/>
+  <p>Every push to <span class="blue">main</span> = automatic redeploy. This is your <span class="highlight">CD pipeline</span>.</p>
+  <br/>
+  <p>For real apps: replace GitHub Pages with <span class="highlight">AWS S3 + CloudFront</span>, <span class="highlight">EC2</span>, or <span class="highlight">ECS</span> — same Git tag triggers the deploy.</p>
+</div>
+
+<!-- SLIDE 9: Hotfix -->
+<div class="slide slide-code">
+  <h2>🚨 Hotfix Workflow</h2>
+  <p>Bug in production? Never fix on develop. Branch from <span class="highlight">main</span> directly.</p>
+  <pre><span class="comment"># Branch from main</span>
+<span class="cmd">git checkout main</span>
+<span class="cmd">git checkout -b hotfix/fix-version-badge</span>
+
+<span class="comment"># Make fix, commit</span>
+<span class="cmd">git commit -m "fix: correct version badge text"</span>
+
+<span class="comment"># Merge to main + tag</span>
+<span class="cmd">git checkout main</span>
+<span class="cmd">git merge --no-ff hotfix/fix-version-badge</span>
+<span class="cmd">git tag -a v1.1.1 -m "Hotfix v1.1.1"</span>
+<span class="cmd">git push origin main --tags</span>
+
+<span class="comment"># Also merge back to develop (keep in sync!)</span>
+<span class="cmd">git checkout develop</span>
+<span class="cmd">git merge --no-ff hotfix/fix-version-badge</span></pre>
+</div>
+
+<!-- SLIDE 10: Summary -->
+<div class="slide slide-green center">
+  <div class="big-icon">✅</div>
+  <h2 style="border:none; text-align:center">Key Takeaways</h2>
+  <ul style="max-width:600px">
+    <li>Never commit directly to <span class="blue">main</span></li>
+    <li>Use <span class="highlight">feature branches</span> for every change</li>
+    <li>Squash WIP commits before merging</li>
+    <li>Write <span class="green">meaningful commit messages</span></li>
+    <li>Tag every production release with <span class="highlight">semver</span></li>
+    <li>Hotfixes branch from <span class="blue">main</span>, merge to both main + develop</li>
+  </ul>
+</div>
+
+<!-- Navigation -->
+<div class="slide-num" id="slideNum">1 / 10</div>
+<div class="nav">
+  <button onclick="changeSlide(-1)">← Prev</button>
+  <button onclick="changeSlide(1)">Next →</button>
+</div>
+
+<script>
+  let current = 0;
+  const slides = document.querySelectorAll('.slide');
+
+  function showSlide(n) {
+    slides[current].classList.remove('active');
+    current = (n + slides.length) % slides.length;
+    slides[current].classList.add('active');
+    document.getElementById('slideNum').textContent = (current + 1) + ' / ' + slides.length;
+  }
+
+  function changeSlide(dir) { showSlide(current + dir); }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight' || e.key === 'ArrowDown') changeSlide(1);
+    if (e.key === 'ArrowLeft'  || e.key === 'ArrowUp')   changeSlide(-1);
+  });
+</script>
+</body>
+</html>
